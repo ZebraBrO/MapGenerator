@@ -302,160 +302,47 @@ function generateNoiseMapGreen(canvas, randomGenerator, noiseScale) {
     }
 }
 
-function addIslandsInWater(canvas, randomGenerator, maxIslands, waterThreshold) {
-    const context = canvas.getContext("2d");
-    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imageData.data;
+function drawWaterWithWaves(canvas) {
+    const context = canvas.getContext('2d', { willReadFrequently: true });
     const width = canvas.width;
     const height = canvas.height;
-    const waterPixels = [];
-    const islandSize = 5; // Размер острова
 
-    // Собираем все водные пиксели
+    // Получаем данные изображения
+    const imageData = context.getImageData(0, 0, width, height);
+    const data = imageData.data;
+
+    // Задаем градиент воды
+    const gradient = context.createLinearGradient(0, 0, 0, height);
+    gradient.addColorStop(0, '#6DAAD0');  // светлый цвет воды
+    gradient.addColorStop(1, '#4B89AC');  // темный цвет воды
+
+    // Заливаем градиентом
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, width, height);
+
+    // Перерисовываем только пиксели воды
     for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
             const index = (y * width + x) * 4;
-            if (data[index] === 0 && data[index + 1] === 0 && data[index + 2] === 255) { // Если пиксель синий (вода)
-                waterPixels.push({ x, y });
+            const r = data[index];
+            const g = data[index + 1];
+            const b = data[index + 2];
+
+            // Если пиксель синий (вода)
+            if (r === 0 && g === 0 && b === 255) {
+                // Добавляем волны
+                const waveHeight = Math.sin(x * 0.1 + y * 0.1) * 10;
+                const newB = Math.max(0, Math.min(255, 255 - waveHeight));
+                data[index] = 0;
+                data[index + 1] = 0;
+                data[index + 2] = newB;
             }
         }
     }
 
-    // Добавляем острова
-    let islandsAdded = 0;
-    while (islandsAdded < maxIslands && waterPixels.length > 0) {
-        const randomIndex = Math.floor(randomGenerator.next() * waterPixels.length);
-        const { x, y } = waterPixels[randomIndex];
-
-        // Проверка окружения для добавления острова
-        let waterCount = 0;
-        for (let dy = -islandSize; dy <= islandSize; dy++) {
-            for (let dx = -islandSize; dx <= islandSize; dx++) {
-                const nx = x + dx;
-                const ny = y + dy;
-                if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                    const nIndex = (ny * width + nx) * 4;
-                    if (data[nIndex] === 0 && data[nIndex + 1] === 0 && data[nIndex + 2] === 255) { // Если пиксель синий (вода)
-                        waterCount++;
-                    }
-                }
-            }
-        }
-
-        // Добавление острова, если достаточно воды вокруг
-        if (waterCount > waterThreshold) {
-            for (let dy = -islandSize; dy <= islandSize; dy++) {
-                for (let dx = -islandSize; dx <= islandSize; dx++) {
-                    const nx = x + dx;
-                    const ny = y + dy;
-                    if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                        const nIndex = (ny * width + nx) * 4;
-                        data[nIndex] = 0;
-                        data[nIndex + 1] = 128;
-                        data[nIndex + 2] = 0;
-                        data[nIndex + 3] = 255;
-                    }
-                }
-            }
-            islandsAdded++;
-        }
-
-        // Удаляем обработанный водный пиксель из списка
-        waterPixels.splice(randomIndex, 1);
-    }
-
+    // Обновляем данные изображения
     context.putImageData(imageData, 0, 0);
 }
-
-function adjustWaterDepthAndDrawWaves(canvas) {
-    const gpu = new GPU.GPU();
-
-    const adjustWaterDepthKernel = gpu.createKernel(function(imageData, width, height) {
-        const x = this.thread.x;
-        const y = this.thread.y;
-        const index = (y * width + x) * 4;
-
-        const r = imageData[index];
-        const g = imageData[index + 1];
-        const b = imageData[index + 2];
-
-        if (r === 0 && g === 128 && b === 0) {
-            this.color(0, 0, 1, 1); // Temporary marking for land
-        } else if (r === 0 && g === 0 && b === 255) {
-            let depth = 255;
-
-            // Check neighbors for depth adjustment
-            if (y > 0 && imageData[(index - width * 4) + 2] !== 255) depth = Math.min(depth, imageData[(index - width * 4) + 2]);
-            if (y < height - 1 && imageData[(index + width * 4) + 2] !== 255) depth = Math.min(depth, imageData[(index + width * 4) + 2]);
-            if (x > 0 && imageData[(index - 4) + 2] !== 255) depth = Math.min(depth, imageData[(index - 4) + 2]);
-            if (x < width - 1 && imageData[(index + 4) + 2] !== 255) depth = Math.min(depth, imageData[(index + 4) + 2]);
-
-            depth = Math.max(0, depth - 1);
-            this.color(0, 0, depth / 255, 1);
-        } else {
-            this.color(r / 255, g / 255, b / 255, 1);
-        }
-    })
-    .setOutput([canvas.width, canvas.height])
-    .setGraphical(true);
-
-    const drawWaterWithWavesKernel = gpu.createKernel(function(imageData, width, height) {
-        const x = this.thread.x;
-        const y = this.thread.y;
-        const index = (y * width + x) * 4;
-
-        const r = imageData[index];
-        const g = imageData[index + 1];
-        const b = imageData[index + 2];
-
-        if (r === 0 && g === 0 && b === 255) {
-            const waveHeight = Math.sin(x * 0.1 + y * 0.1) * 10;
-            const newB = Math.max(0, Math.min(255, 255 - waveHeight));
-            this.color(0, 0, newB / 255, 1);
-        } else {
-            this.color(r / 255, g / 255, b / 255, 1);
-        }
-    })
-    .setOutput([canvas.width, canvas.height])
-    .setGraphical(true);
-
-    const context = canvas.getContext("2d", { willReadFrequently: true });
-    if (!context) {
-        console.error('Failed to get 2D context');
-        return;
-    }
-
-    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-
-    // Adjust water depth
-    adjustWaterDepthKernel(imageData.data, canvas.width, canvas.height);
-    const adjustedCanvas = adjustWaterDepthKernel.canvas;
-
-    const adjustedContext = adjustedCanvas.getContext("2d", { willReadFrequently: true });
-    if (!adjustedContext) {
-        console.error('Failed to get 2D context for adjustedCanvas');
-        return;
-    }
-
-    const adjustedImageData = adjustedContext.getImageData(0, 0, canvas.width, canvas.height);
-
-    // Draw water with waves
-    drawWaterWithWavesKernel(adjustedImageData.data, canvas.width, canvas.height);
-    const finalCanvas = drawWaterWithWavesKernel.canvas;
-
-    const finalContext = finalCanvas.getContext("2d", { willReadFrequently: true });
-    if (!finalContext) {
-        console.error('Failed to get 2D context for finalCanvas');
-        return;
-    }
-
-    const finalImageData = finalContext.getImageData(0, 0, canvas.width, canvas.height);
-    context.putImageData(finalImageData, 0, 0);
-
-    gpu.destroy();
-}
-
-
 
 function clickUpscale(event) {
     const sourceCanvas = event.target;
@@ -650,7 +537,7 @@ function generateStages(randomGenerator, canvases) {
             waterCtx.drawImage(landCanvas, 0, 0);
             removeBluePixels(landCanvas);
             removeGreenPixels(waterCanvas);
-            adjustWaterDepthAndDrawWaves(waterCanvas);
+            drawWaterWithWaves(waterCanvas);
             processCanvas(waterCanvas, previewCanvas);
             nextStage();
         },
