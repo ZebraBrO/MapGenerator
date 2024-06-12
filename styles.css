@@ -1,0 +1,144 @@
+body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background-color: #f0f2f5;
+    color: #333;
+    overflow-x: hidden;
+}
+
+.header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    z-index: 1000;
+}
+
+.header button,
+.header input[type="text"],
+.header label.button {
+    padding: 10px 20px;
+    font-size: 1em;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.header button,
+.header label.button {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.header button:hover,
+.header label.button:hover {
+    background-color: #45a049;
+}
+
+.header input[type="text"] {
+    background-color: #fff;
+    color: #333;
+    border: 2px solid #4CAF50;
+}
+
+.header input[type="text"]:focus {
+    border-color: #45a049;
+    outline: none;
+}
+
+.header button:disabled,
+.header input[type="text"]:disabled,
+.header label.button.disabled {
+    background-color: #d3d3d3;
+    color: #a9a9a9;
+    cursor: not-allowed;
+}
+
+.container {
+    padding-top: 75px; /* Отступ для фиксированной шапки */
+    text-align: center;
+}
+
+.canvas-container {
+    border: 2px solid #4CAF50;
+    background-color: #fff;
+    padding: 5px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin: 0px auto;
+    display: inline-block;
+}
+
+#previewCanvas {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    max-height: calc(100vh - 100px);
+}
+
+.hidden-canvases {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 20px;
+    overflow-y: auto;
+    max-height: 70vh; /* Ограничение высоты для прокрутки */
+}
+
+.hidden-canvases canvas {
+    margin: 10px;
+    border: 1px solid #ccc;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .header button,
+    .header input[type="text"],
+    .header label.button {
+        padding: 8px 16px;
+        font-size: 0.9em;
+    }
+
+    .canvas-container {
+        margin: 10px;
+    }
+
+    .hidden-canvases canvas {
+        width: 150px;
+        height: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        padding: 5px 0;
+    }
+
+    .header button,
+    .header input[type="text"],
+    .header label.button {
+        padding: 6px 12px;
+        font-size: 0.8em;
+        margin: 3px;
+    }
+
+    .hidden-canvases {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .hidden-canvases canvas {
+        width: 100%;
+        height: auto;
+        margin: 5px 0;
+    }
+}

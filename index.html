@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Генератор карт</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="gpu-browser.min.js"></script>
+</head>
+<body>
+    <div class="header">
+        <input type="text" id="seedInput" placeholder="Enter seed" />
+        <button id="generateSeedButton">Generate Map from Seed</button>
+        <button id="generateButton">Generate New Map</button>
+        <button id="viewStagesButton">View Stages</button>
+        <button id="saveButton">Save Map</button>
+        <label for="loadButton" class="button">Load Map</label>
+        <input type="file" id="loadButton" accept="image/*" style="display: none;">
+    </div>    
+    <div class="container">
+        <div class="canvas-container">
+            <canvas id="previewCanvas" width="1024" height="1024"></canvas>
+        </div>
+        <div class="hidden-canvases" style="display: none;">
+            <canvas id="firstLayerCanvas" width="4" height="4"></canvas>
+            <canvas id="secondLayerCanvas" width="8" height="8"></canvas>
+            <canvas id="extraLayerCanvas" width="16" height="16"></canvas>
+            <canvas id="thirdLayerCanvas" width="16" height="16"></canvas>
+            <canvas id="fourthLayerCanvas" width="32" height="32"></canvas>
+            <canvas id="fifthLayerCanvas" width="64" height="64"></canvas>
+            <canvas id="sixthLayerCanvas" width="128" height="128"></canvas>
+            <canvas id="seventhLayerCanvas" width="256" height="256"></canvas>
+            <canvas id="eighthLayerCanvas" width="512" height="512"></canvas>
+            <canvas id="ninthLayerCanvas" width="1024" height="1024"></canvas>
+            <canvas id="waterCanvas" width="1024" height="1024"></canvas>
+            <canvas id="landCanvas" width="1024" height="1024"></canvas>
+            <canvas id="voronoiCanvas" width="1024" height="1024"></canvas>
+            <canvas id="biomeCanvas" width="1024" height="1024"></canvas>
+            <canvas id="smoothCanvas" width="1024" height="1024"></canvas>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
