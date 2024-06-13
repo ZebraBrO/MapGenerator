@@ -430,7 +430,7 @@ function initializeCanvases() {
         "fourthLayerCanvas", "fifthLayerCanvas", "sixthLayerCanvas",
         "seventhLayerCanvas", "eighthLayerCanvas", "ninthLayerCanvas",
         "waterCanvas", "landCanvas", "voronoiCanvas", "biomeCanvas",
-        "smoothCanvas", "extraLayerCanvas"
+        "extraLayerCanvas"
     ];
 
     return canvasIds.map(id => {
@@ -446,7 +446,7 @@ function generateStages(randomGenerator, canvases) {
         fourthLayerCanvas, fifthLayerCanvas, sixthLayerCanvas,
         seventhLayerCanvas, eighthLayerCanvas, ninthLayerCanvas,
         waterCanvas, landCanvas, voronoiCanvas, biomeCanvas,
-        smoothCanvas, extraLayerCanvas
+        extraLayerCanvas
     ] = canvases;
 
     const firstLayerCtx = firstLayerCanvas.getContext("2d", { willReadFrequently: true });
@@ -463,7 +463,6 @@ function generateStages(randomGenerator, canvases) {
     const landCtx = landCanvas.getContext('2d', { willReadFrequently: true });
     const voronoiCtx = voronoiCanvas.getContext('2d', { willReadFrequently: true });
     const biomeCtx = biomeCanvas.getContext('2d', { willReadFrequently: true });
-    const smoothCtx = smoothCanvas.getContext('2d', { willReadFrequently: true });
 
     const noiseScale = 0.3;
     const scaleFactor = 2;
@@ -538,7 +537,6 @@ function generateStages(randomGenerator, canvases) {
         },
         () => {
             replaceBlueWithGreen(eighthLayerCanvas, randomGenerator);
-            smoothCtx.drawImage(eighthLayerCanvas, 0, 0);
             landCtx.drawImage(eighthLayerCanvas, 0, 0);
             processCanvas(landCanvas, previewCanvas);
             nextStage();
@@ -570,6 +568,14 @@ function generateStages(randomGenerator, canvases) {
         () => {
             upscaleCanvas(ninthLayerCanvas, previewCanvas, scaleFactor);
             processCanvas(ninthLayerCanvas, previewCanvas);
+            nextStage();
+        },
+        () => {
+            upscaleCanvas(firstLayerCanvas, firstLayerCanvas, 32);
+            upscaleCanvas(secondLayerCanvas, secondLayerCanvas, 16);
+            upscaleCanvas(extraLayerCanvas, extraLayerCanvas, 8);
+            upscaleCanvas(thirdLayerCanvas, thirdLayerCanvas, 4);
+            upscaleCanvas(fourthLayerCanvas, fourthLayerCanvas, 2);
             nextStage();
         }
     ];
@@ -621,7 +627,7 @@ function generateMapFromSeed() {
 
 function viewStages() {
     const hiddenCanvases = document.querySelector(".hidden-canvases");
-    hiddenCanvases.style.display = hiddenCanvases.style.display === "none" ? "block" : "none";
+    hiddenCanvases.style.display = hiddenCanvases.style.display === "none" ? "" : "none";
     hiddenCanvases.scrollIntoView({ behavior: 'smooth' });
 }
 
