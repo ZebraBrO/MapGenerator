@@ -200,7 +200,18 @@ function checkAndAddGreenPixels(canvas, context) {
 }
 
 function upscaleCanvas(sourceCanvas, targetCanvas, scaleFactor) {
-    const gpu = new GPU.GPU();
+    let gpu
+
+    try {
+        gpu = new GPU();
+    } catch (error) {
+        try {
+            gpu = new GPU.GPU();
+        } catch (error) {
+            console.error("Failed to initialize GPU.js", error);
+        }
+    }
+    
 
     const upscaleKernel = gpu.createKernel(function(imageData, sourceWidth, scaleFactor) {
         const x = Math.floor(this.thread.x / scaleFactor);
