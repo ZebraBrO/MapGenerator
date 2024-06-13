@@ -569,14 +569,6 @@ function generateStages(randomGenerator, canvases) {
             upscaleCanvas(ninthLayerCanvas, previewCanvas, scaleFactor);
             processCanvas(ninthLayerCanvas, previewCanvas);
             nextStage();
-        },
-        () => {
-            upscaleCanvas(firstLayerCanvas, firstLayerCanvas, 32);
-            upscaleCanvas(secondLayerCanvas, secondLayerCanvas, 16);
-            upscaleCanvas(extraLayerCanvas, extraLayerCanvas, 8);
-            upscaleCanvas(thirdLayerCanvas, thirdLayerCanvas, 4);
-            upscaleCanvas(fourthLayerCanvas, fourthLayerCanvas, 2);
-            nextStage();
         }
     ];
 }
